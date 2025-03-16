@@ -1,134 +1,234 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import './Auction.css';
-import teslaImg from '../assets/t.png';
-import bmwImg from '../assets/bmw.jpg';
-import audiImg from '../assets/audi.jpg';
-import mercedesImg from '../assets/mercedes.jpg';
-import porscheImg from '../assets/porshe.jpg';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
+import "./Auction.css";
+
+const socket = io("http://localhost:5000", {
+  withCredentials: true,
+  transports: ["websocket"],
+});
 
 const Auction = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [timeLeft, setTimeLeft] = useState(600);
-  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('isLoggedIn') === 'true');
-  
-  const [cars, setCars] = useState([
-    { id: 1, name: 'Tesla Model S', year: 2022, price: 80000, mileage: '10,000 miles', image: teslaImg, highestBid: 80000, showBidInput: false },
-    { id: 2, name: 'BMW M3', year: 2021, price: 70000, mileage: '15,000 miles', image: bmwImg, highestBid: 70000, showBidInput: false },
-    { id: 3, name: 'Audi R8', year: 2020, price: 150000, mileage: '8,000 miles', image: audiImg, highestBid: 150000, showBidInput: false },
-    { id: 4, name: 'Mercedes AMG GT', year: 2023, price: 120000, mileage: '5,000 miles', image: mercedesImg, highestBid: 120000, showBidInput: false },
-    { id: 5, name: 'Porsche 911 Turbo', year: 2022, price: 170000, mileage: '3,000 miles', image: porscheImg, highestBid: 170000, showBidInput: false }
-  ]);
+  const [cars, setCars] = useState([]);
+  const [bidAmount, setBidAmount] = useState({});
+  const [buyers, setBuyers] = useState({});
+  const [showPopup, setShowPopup] = useState(false);
+  const [formData, setFormData] = useState({
+    itemname: "",
+    itemprice: "",
+    description: "",
+    image: null,
+  });
 
-  const [bidValues, setBidValues] = useState({});
-  
+  const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
+  const username = localStorage.getItem("username");
 
-  // Timer Logic
   useEffect(() => {
-    if (timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft((prevTime) => prevTime - 1);
-      }, 1000);
-      return () => clearInterval(timer);
+    const fetchOpenAuctions = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/items/open");
+        const data = await response.json();
+        if (response.ok) {
+          setCars(
+            data.map((car) => ({
+              ...car,
+              timeRemaining: calculateTimeRemaining(car.createddate),
+            }))
+          );
+        } else {
+          console.error("Failed to fetch auction items:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching open auctions:", error);
+      }
+    };
+
+    fetchOpenAuctions();
+
+    socket.on("bidUpdate", ({ itemId, newBid }) => {
+      setCars((prevCars) =>
+        prevCars.map((car) =>
+          car._id === itemId ? { ...car, bidprice: newBid } : car
+        )
+      );
+    });
+
+    const interval = setInterval(() => {
+      setCars((prevCars) =>
+        prevCars.map((car) => ({
+          ...car,
+          timeRemaining: calculateTimeRemaining(car.createddate),
+        }))
+      );
+    }, 1000);
+
+    return () => {
+      socket.off("bidUpdate");
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    cars.forEach((car) => {
+      if (car.userwhobuyed) {
+        fetchBuyerDetails(car.userwhobuyed);
+      }
+    });
+  }, [cars]);
+
+  const fetchBuyerDetails = async (buyerId) => {
+    if (!buyerId || buyers[buyerId]) return; // Skip if already fetched
+
+    try {
+      const response = await fetch(`http://localhost:5000/users/${buyerId}`);
+      const data = await response.json();
+      if (response.ok) {
+        setBuyers((prev) => ({
+          ...prev,
+          [buyerId]: `${data.firstname} ${data.lastname}`,
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching buyer details:", error);
     }
-  }, [timeLeft]);
-
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Handle Search
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
+  const calculateTimeRemaining = (createdDate) => {
+    const createdTime = new Date(createdDate).getTime();
+    //const endTime = createdTime + 24 * 60 * 60 * 1000; // 24 hours countdown
+    const endTime = createdTime + 2 * 60 * 1000; 
+    const now = new Date().getTime();
+    const timeDiff = endTime - now;
+
+    if (timeDiff <= 0) return "00:00:00";
+
+    const hours = String(Math.floor((timeDiff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
+    const minutes = String(Math.floor((timeDiff / (1000 * 60)) % 60)).padStart(2, "0");
+    const seconds = String(Math.floor((timeDiff / 1000) % 60)).padStart(2, "0");
+
+    return `${hours}:${minutes}:${seconds}`;
   };
 
-  const filteredCars = cars.filter(car =>
-    car.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleBid = (carId, currentHighestBid) => {
+    const bidValue = parseFloat(bidAmount[carId]);
 
-  // Toggle Bid Input Field
-  const toggleBidInput = (carId) => {
-    if (!isLoggedIn) {
-      alert('You need to log in to place a bid.');
+    if (!bidValue || bidValue <= currentHighestBid) {
+      alert("Please enter a bid higher than the current highest bid.");
       return;
     }
 
-    setCars(cars.map(car => 
-      car.id === carId ? { ...car, showBidInput: !car.showBidInput } : car
-    ));
-    setBidValues((prev) => ({ ...prev, [carId]: '' })); // Initialize bid input
+    setCars((prevCars) =>
+      prevCars.map((car) =>
+        car._id === carId ? { ...car, bidprice: bidValue } : car
+      )
+    );
+
+    socket.emit("placeBid", { itemId: carId, newBid: bidValue, userId });
+    setBidAmount((prev) => ({ ...prev, [carId]: "" }));
   };
 
-  // Handle Bidding
-  const handleBid = (carId) => {
-    const bidAmount = parseInt(bidValues[carId]);
-
-    if (!bidAmount || isNaN(bidAmount)) {
-      alert('Please enter a valid number.');
-      return;
+  const handleFormChange = (e) => {
+    if (e.target.name === "image") {
+      setFormData({ ...formData, image: e.target.files[0] });
+    } else {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
     }
+  };
 
-    setCars(cars.map(car => 
-      car.id === carId && bidAmount > car.highestBid 
-        ? { ...car, highestBid: bidAmount, showBidInput: false }
-        : car
-    ));
+  const handleUpload = async () => {
+    const data = new FormData();
+    data.append("itemname", formData.itemname);
+    data.append("itemprice", formData.itemprice);
+    data.append("description", formData.description);
+    data.append("image", formData.image);
+    data.append("auctionstatus", "open");
+    data.append("userwhouploded", userId);
 
-    setBidValues((prev) => ({ ...prev, [carId]: '' })); // Reset input after submission
+    try {
+      const response = await fetch("http://localhost:5000/items", {
+        method: "POST",
+        body: data,
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert("Item added successfully!");
+        setShowPopup(false);
+        setFormData({ itemname: "", itemprice: "", description: "", image: null });
+        setCars([...cars, result.item]);
+      } else {
+        alert("Error uploading item: " + result.error);
+      }
+    } catch (error) {
+      console.error("Error uploading item:", error);
+    }
   };
 
   return (
     <div className="live-auction-container">
       <header className="header">
-        <div className="logo-container">
-          <Link to="/">Home</Link>
-        </div>
-        <div className="search-bar">
-          <input 
-            type="text" 
-            placeholder="Search cars..." 
-            value={searchTerm} 
-            onChange={handleSearch} 
-          />
+        <Link to="/about" className="about-link">About Us</Link>
+        <div className="user-info">
+          <span className="username">Welcome {username}</span>
+          <button className="add-car-btn" onClick={() => setShowPopup(true)}>Add New</button>
+          <button className="logout-btn" onClick={() => {
+            localStorage.clear();
+            navigate("/Login");
+          }}>Logout</button>
         </div>
       </header>
 
-      <div className="auction-timer">
-        <h2>Live Auction Countdown: {formatTime(timeLeft)}</h2>
-      </div>
-
       <div className="car-listings">
-        {filteredCars.map(car => (
-          <div key={car.id} className="car-card">
-            <img src={car.image} alt={car.name} className="car-image" />
-            <h3>{car.name}</h3>
-            <p>Year: {car.year}</p>
-            <p>Price: ${car.price}</p>
-            <p>Mileage: {car.mileage}</p>
-            <p>Highest Bid: ${car.highestBid}</p>
-            
-            <button onClick={() => toggleBidInput(car.id)}>Place Bid</button>
+        {cars.length > 0 ? (
+          cars.map((car) => (
+            <div key={car._id} className="car-card">
+              {car.timeRemaining === "00:00:00" ? (
+                <div className="auction-timer sold">Sold</div>
+              ) : (
+                <div className="auction-timer">Time Left: {car.timeRemaining}</div>
+              )}
+              <img src={`http://localhost:5000${car.imageUrl}`} alt={car.itemname} className="car-image" />
+              <h3>{car.itemname}</h3>
+              <p><strong>Starting Price:</strong> ${car.itemprice}</p>
+              <p><strong>Highest Bid:</strong> ${car.bidprice || car.itemprice}</p>
+              <p>{car.description}</p>
 
-            {car.showBidInput && (
-              <div className="bid-input-container">
-                <input 
-                  type="number" 
-                  placeholder="Enter your bid" 
-                  value={bidValues[car.id] || ''} 
-                  onChange={(e) => setBidValues({ ...bidValues, [car.id]: e.target.value })}
-                />
-                <button onClick={() => handleBid(car.id)}>Submit</button>
-              </div>
-            )}
-          </div>
-        ))}
+              {car.timeRemaining !== "00:00:00" ? (
+                <div className="bid-input-container">
+                  <input
+                    type="number"
+                    placeholder="Enter bid amount"
+                    value={bidAmount[car._id] || ""}
+                    onChange={(e) => setBidAmount({ ...bidAmount, [car._id]: e.target.value })}
+                  />
+                  <button className="bid-btn" onClick={() => handleBid(car._id, car.bidprice || car.itemprice)}>
+                    Bid
+                  </button>
+                </div>
+              ) : (
+                <p className="buyer-name"><strong>Bought by:</strong> {buyers[car.userwhobuyed] || "Unknown"}</p>
+              )}
+            </div>
+          ))
+        ) : (
+          <p>No open auction items available.</p>
+        )}
       </div>
 
-      <footer className="footer">
-        <p>&copy; 2025 Premium Car Auction. All Rights Reserved.</p>
-      </footer>
+      {showPopup && (
+        <div className="upload-popup">
+          <div className="popup-content">
+            <h3>Upload New Item</h3>
+            <input type="text" name="itemname" placeholder="Item Name" onChange={handleFormChange} />
+            <input type="number" name="itemprice" placeholder="Starting Price" onChange={handleFormChange} />
+            <textarea name="description" placeholder="Description" onChange={handleFormChange}></textarea>
+            <input type="file" name="image" accept="image/*" onChange={handleFormChange} />
+            <button className="upload-btn" onClick={handleUpload}>Upload</button>
+            <button className="close-btn" onClick={() => setShowPopup(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,58 +1,84 @@
-/* Ensure the auction page fills the entire viewport */
+/* General Styles */
 .live-auction-container {
-  width: 100vw; /* Full viewport width */
-  min-height: 100vh; /* At least full viewport height */
+  width: 100vw;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between; /* Ensures footer stays at the bottom */
-  background: #f5f5f5; /* Light background */
-  padding: 0;
-  box-sizing: border-box;
+  background: #f5f5f5;
 }
 
-/* Ensure the header is full width */
+/* Header Styling */
 .header {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #222; /* Dark theme */
-  padding: 20px 5%;
+  background: #222;
+  padding: 15px 5%;
   color: #fff;
-  border-radius: 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* Search bar styling */
-.search-bar input {
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  width: 250px;
+.about-link {
+  color: white;
+  text-decoration: none;
   font-size: 16px;
+  font-weight: bold;
 }
 
-/* Auction Timer */
-.auction-timer {
-  text-align: center;
-  font-size: 22px;
+.about-link:hover {
+  text-decoration: underline;
+}
+
+/* User Info */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.username {
   font-weight: bold;
-  color: #d9534f;
-  margin: 20px 0;
+  font-size: 16px;
+  color: white;
+}
+
+/* Logout & Add Car Buttons */
+.logout-btn, .add-car-btn {
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.logout-btn {
+  background: red;
+  color: white;
+  border: none;
+}
+
+.logout-btn:hover {
+  background: darkred;
+}
+
+.add-car-btn {
+  background-color: #ff5722;
+  color: white;
+  border: none;
 }
 
 /* Car Listings Grid */
 .car-listings {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  width: 100%;
-  flex-grow: 1; /* Make this section expand */
-  justify-items: center;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  width: 95%;
+  justify-content: center;
+  padding: 20px;
 }
 
-/* Ensure all car cards are the same size */
+/* Car Cards */
 .car-card {
   background: white;
   border-radius: 8px;
@@ -61,44 +87,31 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease-in-out;
   width: 100%;
-  max-width: 320px; /* Ensures cards are not too wide */
-  height: 450px; /* Fixed height for all cards */
+  max-width: 280px;
+  height: 450px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between; /* Ensures even spacing */
-  gap: 8px;
+  justify-content: space-between;
 }
 
-/* Car Image Styling */
+/* Car Image */
 .car-image {
   width: 100%;
-  height: 180px; /* Fixed height for all images */
+  height: 180px;
   object-fit: cover;
   border-radius: 8px;
 }
 
-/* Ensure description and bid section fit well */
-.car-details {
-  flex-grow: 1; /* Expands to take available space */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+/* Auction Timer */
+.auction-timer {
+  font-size: 16px;
+  font-weight: bold;
+  color: #d9534f;
 }
 
-/* Bid Section Styling */
-.bid-section {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end; /* Pushes button down */
-  flex-grow: 1; /* Takes remaining space */
-}
-
-/* Fix button placement */
-.bid-section button {
-  background-color: #d9534f;
+/* Bid Button */
+.bid-btn {
+  background-color: #28a745;
   color: white;
   border: none;
   padding: 10px 15px;
@@ -106,57 +119,122 @@
   cursor: pointer;
   border-radius: 5px;
   transition: background 0.2s;
-  width: 90%; /* Make button fit within the card */
-  margin-top: auto; /* Pushes button to bottom */
 }
 
-.bid-section button:hover {
-  background-color: #c9302c;
+.bid-btn:hover {
+  background-color: #218838;
 }
 
-/* Add Car Form */
-.add-car-form {
-  width: 90%;
-  max-width: 500px;
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  margin: 20px 0;
-}
-
-.add-car-form input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.add-car-form button {
-  width: 100%;
-  padding: 10px;
-  background: #5cb85c;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.add-car-form button:hover {
-  background: #4cae4c;
-}
-
-/* Ensure footer spans full width */
+/* Footer */
 .footer {
   width: 100%;
   text-align: center;
-  padding: 20px;
+  padding: 15px;
   background: #222;
   color: white;
-  margin-top: auto; /* Push footer to bottom */
-  border-radius: 0;
+  margin-top: auto;
   box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.2);
 }
+/* Auction Timer */
+.auction-timer {
+  font-size: 18px;
+  font-weight: bold;
+  color: #d9534f;
+  background: #fff5f5;
+  padding: 5px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Improved Bid Input */
+.bid-input-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.bid-input-container input {
+  width: 70%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.bid-input-container .bid-btn {
+  width: 30%;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.bid-input-container .bid-btn:hover {
+  background-color: #218838;
+}
+
+/* Fixes Large Gap Between Cards */
+.car-listings {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  width: 90%;
+  justify-content: center;
+  padding: 20px;
+}
+/* Upload Popup */
+.upload-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.upload-btn:hover {
+  background: #218838;
+}
+
+.close-btn {
+  background: #d9534f;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.close-btn:hover {
+  background: #c9302c;
+}
+
+

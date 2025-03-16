@@ -1,39 +1,74 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
+import { useNavigate } from 'react-router-dom'; // For navigation
 import logo from '../assets/a.png';
 import '../App.css';
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [firstname, setFirstname] = useState('');
+  const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate(); // React Router navigation
 
-  // Predefined user credentials
-  const predefinedUser = {
-    email: 'user@gmail.com',
-    password: '1111'
-  };
-
   // Handle login or signup
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (isLogin) {
-      // Check if user input matches predefined credentials
-      if (email === predefinedUser.email && password === predefinedUser.password) {
-        alert('Login successful!');
-        setError('');
-        navigate('/'); // Redirect to Home
-      } else {
-        setError('Invalid email or password. Try again.');
+      // Handle login (Call your API to check credentials)
+      try {
+        const response = await fetch(`http://localhost:5000/users?email=${email}&password=${password}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+  
+        const data = await response.json();
+        console.log('Login API Response:', data); // Log response
+  
+        if (response.ok && data) {
+          console.log('Login Successful:', data);
+         
+          localStorage.setItem('isLoggedIn', 'true');
+          localStorage.setItem("userId",data._id);
+          localStorage.setItem("username", data.firstname);
+          navigate('/Auction'); // Redirect to home
+        } else {
+          console.log('Login Failed:', data);
+          setError('Invalid email or password. Try again.');
+        }
+      } catch (error) {
+        setError('Error connecting to server. Try again later.');
       }
     } else {
-      // Sign-up logic (you can extend this to store new users)
-      alert('Account created successfully!');
-      setEmail('');
-      setPassword('');
-      setIsLogin(true);
+      // Handle sign-up (Call API to create a new user)
+      const userData = { firstname, lastname, email, password };
+      console.log('Signup Successful:', userData);
+      try {
+        const response = await fetch('http://localhost:5000/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData),
+        });
+
+        const data = await response.json();
+        console.log('Signup Successful:', data);
+        if (response.ok) {
+         
+          setFirstname('');
+          setLastname('');
+          setEmail('');
+          setPassword('');
+          setIsLogin(true);
+        } else {
+          alert('Account created successfully!');
+          setError(data.message || 'Signup failed. Try again.');
+        }
+      } catch (error) {
+        alert('Account created successfully!');
+        setError('Error connecting to server. Try again later.');
+      }
     }
   };
 
@@ -44,17 +79,27 @@ const Login = () => {
         <h2>{isLogin ? 'Login' : 'Sign Up'}</h2>
         {error && <p className="error-message">{error}</p>}
         <form onSubmit={handleSubmit}>
-        localStorage.setItem('isLoggedIn', 'true');
-
           {!isLogin && (
             <>
               <div className="input-group">
-                <label>Username</label>
-                <input type="text" placeholder="Enter your username" required />
+                <label>First Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter your first name"
+                  value={firstname}
+                  onChange={(e) => setFirstname(e.target.value)}
+                  required
+                />
               </div>
               <div className="input-group">
-                <label>Phone Number</label>
-                <input type="tel" placeholder="Enter your phone number" required />
+                <label>Last Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter your last name"
+                  value={lastname}
+                  onChange={(e) => setLastname(e.target.value)}
+                  required
+                />
               </div>
             </>
           )}
@@ -82,7 +127,7 @@ const Login = () => {
         </form>
         <p>
           {isLogin ? "Don't have an account?" : "Already have an account?"}
-          <button 
+          <button
             className="toggle-btn"
             onClick={() => {
               setIsLogin(!isLogin);

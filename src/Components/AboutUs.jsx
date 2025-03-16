@@ -10,7 +10,7 @@ const AboutUs = () => {
         <div className="logo">PREMIUM CAR AUCTION</div>
         <nav>
           <ul className="nav-links">
-            <li><Link to="/">Home</Link></li>
+           
             <li><Link to="/auction">Auction</Link></li>
             <li><Link to="/login">Login</Link></li> {/* Fixed link case */}
           </ul>
