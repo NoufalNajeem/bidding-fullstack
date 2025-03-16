@@ -1,0 +1,46 @@
+/* Featured Cars Section */
+.featured-cars {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #fff;
+}
+
+.car-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.car-card {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 280px; /* Fixed width for better alignment */
+  text-align: center;
+}
+
+.car-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.bid-btn {
+  display: block;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.bid-btn:hover {
+  background-color: #e64a19;
+}
