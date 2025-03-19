@@ -1,0 +1,73 @@
+.auction-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .auction-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+
+ /* Main.css */
+
+/* General Styles */
+/* Main.css */
+
+/* General Styles */
+body {
+  background-color: #000; /* Black background */
+  color: #e0f7e9; /* Light green text */
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #004d40 !important; /* Dark green background */
+}
+
+.navbar-brand, .nav-link {
+  color: #e0f7e9 !important; /* Light green text */
+}
+
+.nav-link:hover {
+  color: #004d40 !important; /* Dark green text on hover */
+  background-color: #e0f7e9; /* Light green background on hover */
+  border-radius: 5px;
+}
+
+/* Card Styles */
+.auction-card {
+  background-color: #1a1a1a; /* Dark gray background */
+  border: 2px solid #004d40; /* Dark green border */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  color: #e0f7e9; /* Light green text */
+}
+
+.auction-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 0px 15px rgba(0, 77, 64, 0.7); /* Dark green shadow */
+}
+
+/* Card button */
+.btn-primary {
+  background-color: #004d40; /* Dark green background */
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #00332e; /* Darker green on hover */
+}
+
+/* Footer */
+footer {
+  background-color: #000; /* Black background */
+  color: #e0f7e9; /* Light green text */
+  padding: 10px 0;
+  text-align: center;
+}
+
+/* About section text */
+#about p {
+  color: #b2dfdb; /* Lighter green text */
+}
+
